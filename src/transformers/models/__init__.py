@@ -69,6 +69,7 @@ from . import (
     encoder_decoder,
     ernie,
     esm,
+    examuse,
     flaubert,
     flava,
     fnet,

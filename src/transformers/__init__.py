@@ -264,6 +264,7 @@ _import_structure = {
         "ErnieConfig",
     ],
     "models.esm": ["ESM_PRETRAINED_CONFIG_ARCHIVE_MAP", "EsmConfig", "EsmTokenizer"],
+    "models.examuse": ["EXAMUSE_PRETRAINED_CONFIG_ARCHIVE_MAP", "ExaMuseConfig", "ExaMuseTokenizer"],
     "models.flaubert": ["FLAUBERT_PRETRAINED_CONFIG_ARCHIVE_MAP", "FlaubertConfig", "FlaubertTokenizer"],
     "models.flava": [
         "FLAVA_PRETRAINED_CONFIG_ARCHIVE_MAP",
@@ -1467,6 +1468,14 @@ else:
             "EsmForTokenClassification",
             "EsmModel",
             "EsmPreTrainedModel",
+        ]
+    )
+    _import_structure["models.examuse"].extend(
+        [
+            "EXAMUSE_PRETRAINED_MODEL_ARCHIVE_LIST",
+            "ExaMuseForCausalLM",
+            "ExaMuseModel",
+            "ExaMusePreTrainedModel",
         ]
     )
     _import_structure["models.flaubert"].extend(
@@ -3755,6 +3764,7 @@ if TYPE_CHECKING:
     from .models.encoder_decoder import EncoderDecoderConfig
     from .models.ernie import ERNIE_PRETRAINED_CONFIG_ARCHIVE_MAP, ErnieConfig
     from .models.esm import ESM_PRETRAINED_CONFIG_ARCHIVE_MAP, EsmConfig, EsmTokenizer
+    from .models.examuse import EXAMUSE_PRETRAINED_CONFIG_ARCHIVE_MAP ,ExaMuseConfig
     from .models.flaubert import FLAUBERT_PRETRAINED_CONFIG_ARCHIVE_MAP, FlaubertConfig, FlaubertTokenizer
     from .models.flava import (
         FLAVA_PRETRAINED_CONFIG_ARCHIVE_MAP,
@@ -4095,6 +4105,7 @@ if TYPE_CHECKING:
         from .models.camembert import CamembertTokenizer
         from .models.cpm import CpmTokenizer
         from .models.deberta_v2 import DebertaV2Tokenizer
+        from .models.examuse import ExaMuseTokenizer
         from .models.fnet import FNetTokenizer
         from .models.gpt_sw3 import GPTSw3Tokenizer
         from .models.layoutxlm import LayoutXLMTokenizer
@@ -4786,6 +4797,11 @@ if TYPE_CHECKING:
             EsmForTokenClassification,
             EsmModel,
             EsmPreTrainedModel,
+        )
+        from .models.examuse import (
+            EXAMUSE_PRETRAINED_MODEL_ARCHIVE_LIST,
+            ExaMuseForCausalLM, 
+            ExaMusePreTrainedModel
         )
         from .models.flaubert import (
             FLAUBERT_PRETRAINED_MODEL_ARCHIVE_LIST,
