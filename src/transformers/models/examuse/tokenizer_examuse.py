@@ -61,6 +61,7 @@ class ExaMuseTokenizer(PreTrainedTokenizerFast):
         task_ids=10,
         extra_ids=0,
         mode="music_transformer",
+        **kwargs
     ):
         self.midi_events = MIDIEvents(
             pad_token=pad_token,
@@ -82,7 +83,7 @@ class ExaMuseTokenizer(PreTrainedTokenizerFast):
             token_dict[extra_token] = len(token_dict)
             additional_special_tokens.append(extra_token)
 
-        tokenizer = Tokenizer(WordLevel(token_dict))
+        tokenizer = Tokenizer(WordLevel(token_dict, unk_token='<pad>'))
         tokenizer.pre_tokenizer = WhitespaceSplit()
 
         super().__init__(
