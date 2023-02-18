@@ -4,7 +4,7 @@
 
 Extending widely used large language models, recent work have proposed various adaptations of large-scale Transformer architectures to music generation. However, existing work share two major drawbacks: 1) their tokenization layers require domain-specific structural information (e.g. bars and beats) that are typically missing in in-the-wild data or 2) they lack reproducibility with no publicly available implementation. In light of such limitations, we implement a MIDI-based music generation framework inspired by MuseNet, and empirically study the effect of different structural embedding setups while only using information available in in-the-wild data. Experimental analyses under various metrics reveal interesting insights that provide guidance toward which structural encoding setup to deploy. These insights may shed light on improving music generation using the existing architecture of the common language model. In addition, various embedding setups may allow the users to create music in different aspects. We open-source our implementation via [HuggingFace](https://github.com/anonymous) towards reproducibility for practitioners upon acceptance.
 
-![method_figure.png](EAM%20Experimental%20Analysis%20of%20Structural%20Embeddings%203d0a91a956dc4c88aeaa9c3f74d42b19/method_figure.png)
+![method_figure.png](https://huggingface.co/acl-submission-anonym/EAM-relative/resolve/main/method_figure.png)
 
 ## Install
 
