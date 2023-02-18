@@ -29,4 +29,7 @@ EXAMUSE_PRETRAINED_CONFIG_ARCHIVE_MAP = {
 
 class ExaMuseConfig(GPT2Config):
     model_type = "examuse"
-
+    
+    def __init__(self, embedding_type="relative", **kwargs):
+        super().__init__(**kwargs)
+        self.embedding_type = embedding_type

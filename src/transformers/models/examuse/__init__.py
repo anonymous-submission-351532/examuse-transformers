@@ -26,7 +26,7 @@ _import_structure = {
 }
 
 if is_torch_available():
-    _import_structure["modeling_music_bert"] = [
+    _import_structure["modeling_examuse"] = [
         "EXAMUSE_PRETRAINED_MODEL_ARCHIVE_LIST",
         "ExaMuseForCausalLM",
         "ExaMuseModel",

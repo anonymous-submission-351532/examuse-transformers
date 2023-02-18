@@ -75,6 +75,7 @@ MODEL_MAPPING_NAMES = OrderedDict(
         ("electra", "ElectraModel"),
         ("ernie", "ErnieModel"),
         ("esm", "EsmModel"),
+        ("examuse", "ExaMuseModel"),
         ("flaubert", "FlaubertModel"),
         ("flava", "FlavaModel"),
         ("fnet", "FNetModel"),

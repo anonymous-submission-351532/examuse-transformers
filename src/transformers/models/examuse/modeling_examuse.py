@@ -16,6 +16,7 @@
 
 
 import os
+import math
 from typing import Tuple, Union, Optional
 
 import torch
@@ -24,6 +25,7 @@ from torch import nn
 from torch.nn import CrossEntropyLoss, MSELoss
 import numpy as np
 import sys
+import librosa
 
 from transformers.models.examuse.configuration_examuse import ExaMuseConfig
 from ...activations import ACT2FN
@@ -60,6 +62,83 @@ _CONFIG_FOR_DOC = "ExaMuseConfig"
 EXAMUSE_PRETRAINED_MODEL_ARCHIVE_LIST = [
     "examuse",
 ]
+
+
+class ScaledPositionalEmbedding(nn.Module):
+    '''
+    https://github.com/codertimo/BERT-pytorch/blob/d10dc4f9d5a6f2ca74380f62039526eb7277c671/bert_pytorch/model/embedding/position.py#L6
+    '''
+    def __init__(self, d_model, w=1., init_range=None, maxlen=10000, orthogonal=False, device=None):
+        super().__init__()
+
+        # Compute the positional encodings once in log space.
+        pe = torch.zeros(maxlen, d_model).float()
+        pe.require_grad = False
+        
+        position = torch.arange(0, maxlen).float().unsqueeze(1)
+        div_term = (torch.arange(0, d_model, 2).float() * -((1 / w) * math.log(10000.0) / d_model)).exp()
+
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+
+        # pe = pe.unsqueeze(0)
+        # self.register_buffer('pe', pe)
+        # self.alpha = nn.Parameter(torch.ones(1))
+        # self.weight = self.alpha * nn.Parameter(pe)
+        pe = pe * init_range # scale
+        self.weight = pe # untrainable
+        # self.weight = nn.Parameter(pe)
+
+    # def forward(self, x):
+    #     return self.alpha * self.pe[:, :x.size(1)]
+
+
+class SpectralEmbedding(nn.Module):
+    def __init__(self, d_model, maxlen, init_range, device=None):
+        super().__init__()
+
+        self.init_range = init_range
+        self.max_len = maxlen
+        feature = self.get_chromas(d=d_model, pitch_num=maxlen).to(device)
+        self.weight = nn.Parameter(feature)
+
+    # def get_filterbank(self, d, N):
+        # fb = librosa.filters.mel(sr=sr, n_fft=2048, n_mels=d, fmin=0.0, fmax=440 * (2 ** ((N - 69) / 12)), htk=True, norm=None)
+
+    def get_mels(self, d):
+        # mels = [np.zeros([d, 1])]
+        mels = []
+        for n in range(self.max_len):
+            sr = 32000
+            freq = 440 * (2 ** ((n - 69) / 12))
+            tone = librosa.tone(freq, sr=sr, duration=1)
+            mel = librosa.feature.melspectrogram(y=tone, sr=sr, n_mels=d, n_fft=sr, win_length=sr, hop_length=sr+1)
+            # mel_db = librosa.power_to_db(mel, ref=np.max)
+            mel = mel / np.max(mel)
+            mels.append(mel)
+            print("** gathered melspec for pitch number {}".format(n), end='\r')
+        # mels.append(np.zeros([d, 1]))
+        mels = np.concatenate(mels, axis=1).T
+        return torch.from_numpy(mels).float()
+
+    def get_chromas(self, d, pitch_num):
+        chromas = []
+        for n in range(pitch_num):
+            sr = 32000
+            freq = 440 * (2 ** ((n - 69) / 12))
+            tone = librosa.tone(freq, sr=sr, duration=1)
+            chroma = librosa.feature.chroma_stft(y=tone, sr=sr, n_chroma=d, n_fft=sr, win_length=sr, hop_length=sr+1)
+            # chroma = chroma / np.max(chroma)
+            chroma = (chroma - np.mean(chroma)) / np.std(chroma) * self.init_range
+            chromas.append(chroma)
+            print("** gathered chroma for pitch number {}".format(n), end='\r')
+        # chromas.append(np.zeros([d, 1])) # zero vector for the last index
+        chromas = np.concatenate(chromas, axis=1).T
+        # normalization 
+        # chromas = (chromas - np.min(chromas)) / (np.max(chromas) - np.min(chromas))
+        # a, b = -1, 1
+        # chromas = (b - a) * ((chromas - np.min(chromas)) / (np.max(chromas) - np.min(chromas))) + a
+        return torch.from_numpy(chromas).float()
 
 
 class ExaMusePreTrainedModel(GPT2PreTrainedModel):
@@ -380,6 +459,24 @@ class ExaMuseForCausalLM(ExaMusePreTrainedModel):
         #### NEW PART ####
         # Auxiliary tool for additional embeddings
         self.midi_tool = MIDIEvents(mode="muse_net")
+
+        if config.embedding_type == "spectral":
+            # Custom weight initialization
+            self.transformer.wie[0].weight.data = torch.cat([
+                torch.zeros(1, config.hidden_size),
+                ScaledPositionalEmbedding(
+                    maxlen=128, w=10, d_model=config.hidden_size, 
+                    init_range=config.initializer_range).weight.data], dim=0) # part (first index is 0)
+            self.transformer.wie[2].weight.data = torch.cat([
+                torch.zeros(1, config.hidden_size), 
+                ScaledPositionalEmbedding(
+                    maxlen=100, w=1, d_model=config.hidden_size, 
+                    init_range=config.initializer_range).weight.data], dim=0) # time (first index is 0) 
+            # self.transformer.wie[3].weight.data = torch.cat([
+            #     SpectralEmbedding(
+            #         maxlen=128, d_model=config.hidden_size, 
+            #         init_range=config.initializer_range).weight.data,
+            #     torch.zeros(1, config.hidden_size)], dim=0) # pitch (end index is 0)
 
     # @add_start_docstrings(PARALLELIZE_DOCSTRING)
     def parallelize(self, device_map=None):
