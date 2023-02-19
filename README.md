@@ -26,6 +26,9 @@ $pip install --editable .
 >> # if you want relative model, see here: "acl-submission-anonym/EAM-relative"
 >> model = AutoModelForCausalLM.from_pretrained(model_name) 
 >> tokenizer = AutoTokenizer.from_pretrained(model_name)
+>> # generate
+>> inputs = tok('<bos> <v64_C4> <time_2>', return_tensors='pt')
+>> model.generate(**inputs, max_time_length=[50])
 ```
 
 ## Checkpoints
