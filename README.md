@@ -28,12 +28,12 @@ $pip install --editable .
 >> tokenizer = AutoTokenizer.from_pretrained(model_name)
 ```
 
-## Model Cards
+## Checkpoints
 
 |  | GPT2-based model |
 | --- | --- |
-| Relative Model | https://huggingface.co/acl-submission-anonym/EAM-relative |
-| Spectral Model | https://huggingface.co/acl-submission-anonym/EAM-spectral |
+| Relative Model | [Available](https://huggingface.co/acl-submission-anonym/EAM-relative) |
+| Spectral Model | [Available](https://huggingface.co/acl-submission-anonym/EAM-spectral) |
 
 ## Run on Specific(Updated) HF Versions
 
